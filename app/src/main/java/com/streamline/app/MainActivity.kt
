@@ -6,11 +6,13 @@ import android.view.TextureView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.jiangdongguo.libausbc.camera.CameraClient
 import com.jiangdongguo.libausbc.camera.CameraStrategy
 
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     private lateinit var statusTextView: TextView
     private lateinit var textureView: TextureView
+    private var cameraClient: CameraClient? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,24 +41,34 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     }
 
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-        checkUvcDevices()
+        checkAndStartCapture(surface)
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
-    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = true
+    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+        cameraClient?.stopPreview()
+        return true
+    }
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
 
-    private fun checkUvcDevices() {
+    private fun checkAndStartCapture(surface: SurfaceTexture) {
         try {
             val cameraStrategy = CameraStrategy(this)
             val usbDeviceList = cameraStrategy.uvcDeviceList
             if (usbDeviceList.isNotEmpty()) {
-                statusTextView.text = "Found ${usbDeviceList.size} UVC device(s)!"
+                statusTextView.text = "UVC device detected! Starting stream..."
+                
+                // Initialize camera client for the first discovered UVC device
+                cameraClient = CameraClient.Builder(this, usbDeviceList[0])
+                    .setPreviewTexture(surface)
+                    .build()
+                
+                cameraClient?.startPreview()
             } else {
                 statusTextView.text = "No UVC capture card detected. Please plug it in."
             }
         } catch (e: Exception) {
-            statusTextView.text = "Error scanning devices: ${e.localizedMessage}"
+            statusTextView.text = "Error starting capture: ${e.localizedMessage}"
         }
     }
 }

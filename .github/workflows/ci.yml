@@ -24,6 +24,11 @@ jobs:
       with:
         gradle-version: '8.4'
 
+
+    - name: List Gradle Tasks
+      run: gradle tasks
+
+
     - name: Build Debug APK
       run: gradle :app:assembleDebug
 

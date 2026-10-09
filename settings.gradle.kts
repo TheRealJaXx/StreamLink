@@ -15,5 +15,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Streamline"
+rootProject.name = "StreamLink"
 include(":app")
+

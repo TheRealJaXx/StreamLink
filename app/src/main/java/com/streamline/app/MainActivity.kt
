@@ -1,28 +1,50 @@
 package com.streamline.app
 
+import android.graphics.SurfaceTexture
 import android.os.Bundle
+import android.view.TextureView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.jiangdongguo.libausbc.camera.CameraStrategy
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     private lateinit var statusTextView: TextView
+    private lateinit var textureView: TextureView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        statusTextView = TextView(this).apply {
-            text = "Streamline: Scanning for UVC devices..."
-            textSize = 18f
-            setPadding(50, 50, 50, 50)
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
         }
-        
-        setContentView(statusTextView)
-        
+
+        statusTextView = TextView(this).apply {
+            text = "Streamline: Initializing..."
+            textSize = 16f
+            setPadding(30, 30, 30, 30)
+        }
+
+        textureView = TextureView(this).apply {
+            surfaceTextureListener = this@MainActivity
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+            )
+        }
+
+        layout.addView(statusTextView)
+        layout.addView(textureView)
+        setContentView(layout)
+    }
+
+    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
         checkUvcDevices()
     }
 
-    private fun checkUuvcDevices() {} // Placeholder for cleaner initialization
+    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
+    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = true
+    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
 
     private fun checkUvcDevices() {
         try {
